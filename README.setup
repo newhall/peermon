@@ -1,0 +1,107 @@
+ *
+ *  PeerMon
+ *  Copyright 2011 Tia Newhall, Janis Libeks, Ross Greenwood,
+ *                 Jeff Knerr, Steve Dini
+ *
+ *  C++ Sockets on Unix and Windows  
+ *  Copyright (C) 2002
+ *
+ *
+ *  This file is part of PeerMon.
+ *
+ *  PeerMon is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  PeerMon is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with PeerMon.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ *  PeerMon documentation: www.cs.swarthmore.edu/~newhall/peermon
+ * 
+
+
+All PeerMon documentation including how to configure and run peermon and 
+its related applications (smarterSSH, autoMPIgen, and dynamic DNS mapping) 
+is available off the PeerMon webpage: www.cs.swarthmore.edu/~newhall/peermon/
+
+To build:  make
+
+           Unless you have libraries and include files in non-standard 
+           locations, this should work
+
+Normally you would also want to install the software so after running "make"
+run "make install" and that will install the software in the /usr/sbin
+directory or manually edit the Makefile and change INSTALL_DIR to be the
+alternative location you want to install to. To install the software you need
+to be root, however "make" can be run as yourself.
+
+Alternatively you can run the peermon_1.1*.deb file included to run the 
+installation. It will perform the above stated steps for you. To install using
+the peermon package file, run sudo dpkg -i peermon_1.1*.deb. If for some
+reason the peermon_1.1*.deb file is not compatible with your system then 
+proceed and do the above-mentioned manual installation.
+
+Setting up the Peermon environment
+
+For peermon to work, there are a couple of system configurations as well as 
+some configuration files that have to be setup.
+ * For peermon to run (as a daemon), it is necessary that the system must
+   have a peermon system user. Run sudo adduser --system peermon to add the
+   peermon user. Without this user, peermon will not run (as a daemon)
+ * The next step is to create a configuration file with the names of 3 hosts
+   in the system and port numbers for use with peermon. An example file will
+   look like:
+   256.256.256.254:1000
+   256.256.256.255:1000
+   256.256.256.256:1000
+   where the first part represents the IP address of the host and then the port
+   number to use. It is important that the contents of this file across all the
+   nodes should be the same. The file should be saved as 
+   /etc/peermon/machines.txt. As long as peermon is eventually started on at 
+   least one of the nodes in this config file, the peermon daemon started with
+   this config file will eventually be integrated into the peer-to-peer network
+   and learn about all the other nodes after a few message exchanges.
+ * The last configuration file is optional and is used to notify peermon which
+   IP address prefixes it must consider "valid". The file should be stored as
+   /etc/peermon/valid_ips.txt and an example will be of the form:
+   256.256.256
+   123.123.123 
+   Peermon will pass long data so long as the data it knows about conforms to 
+   these prefixes. The absence or emptiness of the said file will make peermon
+   accept and pass along data about any known hosts without any restrictions.
+
+Advanced Settings
+
+Peermon has the property that it can be run both in daemon and non-daemon mode.
+To alter this property, open the peermon.h file and toggle the variable called
+DAEMONIZE_PEERMON. Changing it to non-daemon mode removes it from the control
+of init and puts it under the current user's control, thus allowing runtime
+debugging when modifying peermon.
+
+Another advanced variable that can be changed is defaul_client_port in 
+peermon.h. Changing this variable effectively changes the default point of
+interaction between PeerMon and any client programs. Changing this variable in
+peermon.h means you will also need to change it in peermonlib.py as this is
+the interconnect library between PeerMon and the client applications.
+
+Running Peermon
+
+To run peermon type peermon -p portnumber and replace the portnumber variable
+with the actual portnumber you want to use. Peermon can also be called with
+a number of command line options which are discussed indepth on the peermon
+page at www.cs.swarthmore.edu/~newhall/peermon
+
+The discussion for the client applications smarterSSH and autoMPIgen can also
+be found on that page.
+
+Notes:
+
+ * The Practical Sockets library is by Michael J. Donahoo, Baylor University
+ * PeerMon uses the pthreads library
+
