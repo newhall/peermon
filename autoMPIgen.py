@@ -201,7 +201,7 @@ def main():
 
 
   args = argp.parse_args()
-  library = PeermonLib() #create instance of PeerMon data parser
+  library = PeermonLib(args.port) #create instance of PeerMon data parser
   session = MPIgen(args, library.nodes_list)
 
   if args.flags==None or not('i' in args.flags):

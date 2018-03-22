@@ -49,6 +49,7 @@ class SmarterSSH():
     self.port_num = args.port #get port_number
     self.data = data #the processes info
     self.flags = args.flags
+
   
   def _sort(self):
     """
@@ -177,7 +178,7 @@ def main():
                     const='i', help="Display results and exit")
 
   args = argp.parse_args()
-  library = PeermonLib() #create instance of PeerMon data parser
+  library = PeermonLib(args.port) #create instance of PeerMon data parser
   session = SmarterSSH(args, library.nodes_list)
   
   if args.flags==None or not('i' in args.flags):
