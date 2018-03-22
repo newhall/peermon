@@ -20,3 +20,10 @@ This file contains the descriptions about some of the files in this directory
  *valid_ips.txt
    -sample valid IPs configuration file. The edited version of this file should
     be stored in /etc/peermon/valid_ips.txt
+
+*install.sh, startcommand,killall.sh, isup.sh: some example scripts to run
+  -example scripts to install (intall.sh) peermon at user level (just as 
+   a regular user) and to kill (killall.sh) and check (isup.sh) if it is up 
+   these scripts require a file with a list of machine names on which to
+   start peermon, and the example startcommand uses command line options
+   specifying specific machines.txt and valid_ips.txt files) 

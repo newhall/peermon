@@ -47,7 +47,10 @@ the peermon package file, run sudo dpkg -i peermon_1.1*.deb. If for some
 reason the peermon_1.1*.deb file is not compatible with your system then 
 proceed and do the above-mentioned manual installation.
 
-Setting up the Peermon environment
+Setting up the Peermon environment 
+
+These steps are necessary to run peermon as a daemon at start-up 
+(vs. just running it at user-level as a regular user)
 
 For peermon to work, there are a couple of system configurations as well as 
 some configuration files that have to be setup.

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# set this to your peermon path 
+peermonpath=/home/newhall/peermon
+
+$peermonpath/peermon -p 2288 -f $peermonpath/myconfigfile.txt -i $peermonpath/myvalidips -u
+

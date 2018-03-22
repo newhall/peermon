@@ -94,6 +94,7 @@ static const int PEERMON_DEBUG=0;
 // set to 0 to turn off debug output
 static const int DEBUG_PEERMON=0;
 static const float VERSION=1.1;
+static int user_mode = 0;
 
 //*********************************************************************
 // reads in the list of initial peermon machines from config file
@@ -993,16 +994,17 @@ void clean_hashtable(HashMap hashtable){
 void usage(void){
   fprintf(stderr,
       "Usage: peermon -p portnum [-h] [-c] [-f configfile]"
-      " [-l portnum] [-n secs]\n"
-      "   -p  portnum:   use portnum as the peermon listen port\n"
+      " [-l portnum] [-n secs] [-u]\n"
+      "   -p  portnum:  use portnum as the peermon listen port\n"
       "                     and portnum+1 for the peermon send port\n"
-      "   -h:            print out this help message\n"
-      "   -c:            run this peermon deamon in collector-only mode\n"
-      "   -f conf_file:  run w/conf_file instead of /etc/peermon/machines.txt\n"
-      "   -i ip_file:    run w/ip_filr instead of /etc/peermon/valid_ips.txt\n"
-      "   -l portnum:    use portnum for client interface (default 1981)\n"
-      "   -n secs:  how often damon sends its info to peers (default 20)\n"
-      "   -v:       Version number\n"
+      "   -h:           print out this help message\n"
+      "   -c:           run this peermon deamon in collector-only mode\n"
+      "   -f conf_file: run w/conf_file instead of /etc/peermon/machines.txt\n"
+      "   -i ip_file:   run w/ip_filr instead of /etc/peermon/valid_ips.txt\n"
+      "   -l portnum:   use portnum for client interface (default 1981)\n"
+      "   -u:           run at user-level (not as peermon user daemon)\n" 
+      "   -n secs:      how often damon sends its info to peers (default 20)\n"
+      "   -v:           show version number\n"
       "\n");
 }
 
@@ -1012,12 +1014,13 @@ void usage(void){
 void process_args(int ac, char *av[]){
   int c, p=0;
   while(1){
-    c=getopt(ac, av, ":p:i:chvf:l:n:");   // "p:"  p option has an arg  "ch"  don't
+    c=getopt(ac, av, ":p:i:chuvf:l:n:");   // "p:"  p option has an arg  "ch"  don't
     switch(c){
       case 'h': usage(); exit(0); break;
       case 'v': printf("Peermon Version: %.2f\n", VERSION); exit(0); break;
       case 'p': port_num=atoi(optarg); p = 1; break;
       case 'c': collector_only = 1; break;
+      case 'u': user_mode = 1; break;
       case 'f': config_file=optarg; break;
       case 'l': client_port_num=atoi(optarg); break;
       case 'i': ip_file=optarg; break;
@@ -1052,11 +1055,13 @@ void drop_privs(int real_uid, int real_gid) {
     if (retvu == 0 && retvg == 0)
       return;
     if (retvu != 0) {
-      syslog(LOG_WARNING, "Error (%d) dropping uid privileges...exiting.", retvu);
+      syslog(LOG_WARNING, 
+          "Error (%d) dropping uid privileges...exiting.", retvu);
       exit(retvu);
     }
     if (retvg != 0) {
-      syslog(LOG_WARNING, "Error (%d) dropping gid privileges...exiting.", retvg);
+      syslog(LOG_WARNING, 
+          "Error (%d) dropping gid privileges...exiting.", retvg);
       exit(retvu);
     }
 }
@@ -1101,7 +1106,7 @@ int main(int argc, char *argv[]) {
   send_port = port_num+1;
 
 
-  if(DAEMONIZE_PEERMON){  // daemonize this process
+  if(DAEMONIZE_PEERMON) { // daemonize this process
     // create an orphaned child that will become a child of init
     pid_t pid, sid; //variables for daemonizing
     struct passwd *ID;
@@ -1123,7 +1128,9 @@ int main(int argc, char *argv[]) {
     openlog(DAEMON_NAME, LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
 
     /* change to peermon user/group -- should do this EARLY */
-    drop_privs(PEERUID,PEERGID);
+    if(!user_mode){ 
+      drop_privs(PEERUID,PEERGID);
+    }
 
     /* Fork off the parent process */       
     pid = fork();
