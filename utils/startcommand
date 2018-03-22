@@ -3,9 +3,14 @@
 # set this to your peermon path 
 peermonpath=/home/newhall/peermon
 
+# set this to name of configfile and validips files
+config=$peermonpath/myconfigfile.txt
+valid=$peermonpath/myvalidips
+
 # set -p and -l port numbers
 listenport=2288
-clientport=1988
+clientport=1981
 
-$peermonpath/peermon -p $listenport -l $clientport -f $peermonpath/myconfigfile.txt -i $peermonpath/myvalidips -u
+$peermonpath/peermon -p $listenport -l $clientport -f $config -i $valid -u
+echo $peermonpath/peermon -p $listenport -l $clientport -f $config -i $valid -u
 

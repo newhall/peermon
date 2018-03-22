@@ -26,4 +26,4 @@ This file contains the descriptions about some of the files in this directory
    a regular user) and to kill (killall.sh) and check (isup.sh) if it is up 
    these scripts require a file with a list of machine names on which to
    start peermon, and the example startcommand uses command line options
-   specifying specific machines.txt and valid_ips.txt files) 
+   specifying specific machines.txt and validips.txt files) 

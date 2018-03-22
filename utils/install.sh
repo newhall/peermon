@@ -11,6 +11,6 @@ else
   for i in `cat $1`
   do
     echo "installing peermon on $i:"
-    ssh $2@$i $peermonpath/startcommand 
+    ssh $2@$i $peermonpath/utils/startcommand 
   done
 fi
