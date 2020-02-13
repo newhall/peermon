@@ -41,8 +41,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h> 
-#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #include <errno.h>
 #include <syslog.h>
 #include <assert.h>
@@ -53,6 +57,7 @@
 #include <sys/wait.h>
 #include <vector>
 #include <pwd.h>
+
 using namespace std;
 
 typedef HashEntry *HashEntryPtr;
@@ -721,11 +726,40 @@ unsigned int get_own_memory(){
 }
 
 //*********************************************************************
+// Right now this is IPv4 specific
 void get_own_IP(char buf[]){
   // retrieve the IP of the first ethernet port for this machine
-  string text = getStdoutFromCommand( string("ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'"));
 
-  parse_IP(text.c_str(), buf);
+  // hacky way parsing ifconfig output 
+  // (this is not portable to different linux distributions/versions):
+  //string text = getStdoutFromCommand( string("ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'"));
+  //parse_IP(text.c_str(), buf);
+  
+  // better way (thanks to Jeff who found this): 
+  // https://www.includehelp.com/c-programs/get-ip-address-in-linux.aspx)
+  // (1) create a socket
+  // (2) use ioctl on socket to NW config information about eth0
+  // (3) close socket
+  // (4) convert sin_addr filed to IP string (using inet_ntoa)
+  int fd;
+  struct ifreq ifr;  /* sin_addr field stores IP address */
+
+  /* create a udp socket (AF_INET is IPv4 */
+  fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+  ifr.ifr_addr.sa_family = AF_INET;
+
+  /*eth0 - define the ifr_name - port name where network attached.*/
+  memcpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
+
+  /* get network interface information about eth0.*/
+  ioctl(fd, SIOCGIFADDR, &ifr);
+  /*closing fd*/
+  close(fd); 
+  
+  /*Extract IP Address*/
+  strcpy(buf, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+
   if(DEBUG_PEERMON){ printf("self IP:%s\n",buf); }
 }
 
@@ -1100,13 +1134,20 @@ int main(int argc, char *argv[]) {
 
   char result[IP_LEN];
   int ret;
+  int daemonize_peermon;
+
   current_time = 0;
   use_heuristic = 2; //best heuristic to use
+
   process_args(argc, argv);
   send_port = port_num+1;
 
+  daemonize_peermon = DAEMONIZE_PEERMON;
+  if(user_mode) {
+    daemonize_peermon = 0;
+  }
 
-  if(DAEMONIZE_PEERMON) { // daemonize this process
+  if(daemonize_peermon) { // daemonize this process
     // create an orphaned child that will become a child of init
     pid_t pid, sid; //variables for daemonizing
     struct passwd *ID;
