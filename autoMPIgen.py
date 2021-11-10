@@ -51,6 +51,7 @@ class MPIgen():
     self.in_cpus = args.cpu
     self.output = args.hostfile
     self.inc_cpu_count = args.inc_cpu
+    self.slots = args.slots # the number of slots to print with each host
 
 
   def _sort(self):
@@ -117,12 +118,17 @@ class MPIgen():
     displayed = 0 #number of displayed results
     for host in self.data:
       if not (host.ram==0):
-        if (self.inc_cpu_count): #include CPU counts
+        if (self.slots > 0): # include the specified slot number
+          if self.IPs:
+            print "%s slots=%d"%(host.IP, self.slots)
+          else:
+            print "%s slots=%d"%(host.HOSTNAME, self.slots)
+        elif (self.inc_cpu_count): #include CPU counts
           if self.IPs:
             print "%s slots=%d"%(host.IP, host.cores)
           else:
             print "%s slots=%d"%(host.HOSTNAME, host.cores)
-        else:
+        else :
           if self.IPs:
             print host.IP
           else:
@@ -184,7 +190,7 @@ def main():
   argp.add_argument('-m', '--mem', action='append_const', dest='flags',
                     const='m', help="Sort results by available memory")
   argp.add_argument('-n', action='store', type=int, dest='length',
-                    default=1, help="specify number of machines to print")
+                    default=1, help="specify number of machines (hosts)")
   argp.add_argument('-r', action='store_true', default=False, dest='random',
                     help="return any random n nodes: no ordering by usage")
   argp.add_argument('-v', '--verbose', action='store_true', default=False,
@@ -193,8 +199,13 @@ def main():
                     help="Print machines by IP instead of by hostname")
   argp.add_argument('-i', '--info', action='append_const', dest='flags',
                     const='i', help="Display results and exit")
+  argp.add_argument('-s', action='store', type=int, dest='slots',
+                    default=0, 
+                    help="Include specified number of slots with each host\
+                            in hostfile (-q and -s are incompatable)")
   argp.add_argument('-q', '--quantify', action='store_true', default=False,
-                    dest='inc_cpu', help="Include number of CPUs in hostfile")
+                    dest='inc_cpu', help="Include host's number of CPUs in\
+                            as slots in hostfile, (-q and -s are incompatable)")
   argp.add_argument('-x', action='store_true', default=False, dest='cpu',
                     help='Execute the -n flag as number of CPUs not nodes\
                          (only valid when both -q and -n are used)')
